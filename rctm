@@ -4,11 +4,9 @@ begin
 	m = gets().chop()
 	case m.downcase()
 	when "k"
-		Kelvin  = true
 		Celsius = false
 	when "c"
 		Celsius = true
-		Kelvin  = false 
 	else
 		puts("Only Kelvin and Celsius [k/c] are accepted as valid options.\nQuitting.")
 		exit!()
