@@ -1,14 +1,14 @@
 #!/usr/bin/env ruby
 begin
 	print("Use Kelvin or Celsius for measurement [k/c]?: ")
-	m = gets().chop()
+	m = gets().chop()[0]
 	case m.downcase()
 	when "k"
 		Celsius = false
 	when "c"
 		Celsius = true
 	else
-		puts("Only Kelvin and Celsius [k/c] are accepted as valid options.\nQuitting.")
+		puts("Invalid option: #{m}.\nQuitting.")
 		exit!()
 	end
 
