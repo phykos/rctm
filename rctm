@@ -1,46 +1,62 @@
 #!/usr/bin/env ruby
 begin
-	print("Use Kelvin or Celsius for measurement [k/c]?: ")
-	m = gets().chop()[0]
-	case m.downcase()
-	when "k"
-		Celsius = false
-	when "c"
-		Celsius = true
-	else
-		puts("Invalid option: #{m}.\nQuitting.")
-		exit!()
+  print("Use Kelvin or Celsius for measurement [k/c]?: ")
+  m = gets().chop()[0]
+  if m == nil
+    puts("Expected k/c but got nil.")
+    exit!()
+  end
+  case m.downcase()
+  when "k"
+  	Celsius = false
+  when "c"
+  	Celsius = true
+  else
+  	puts("Invalid option: #{m}.\nQuitting.")
+  	exit!()
+  end
+
+  print("Insert interval (unsigned integer or float): ")
+  i = gets().chop().to_f().abs()
+  if i == 0 || nil 
+    puts("Please enter a number different from 0.")
+    exit!()
+  end
+  print("Insert temperature limit (unsigned integer or float): ")
+  l = gets().chop().to_f().abs()
+  if l == 0 || nil 
+    puts("Please enter a number different from 0.")
+    exit!()
+  end
+  
+  print("[OPTIONAL] Shell command to execute if the limit (#{l}) is reached: ")
+  cmd = gets().chop()
+
+  while true
+    if Celsius == true
+	  t = "#{File.read("/sys/class/thermal/thermal_zone0/temp").to_f() / 1000}C"
+	else 
+	  t = "#{(File.read("/sys/class/thermal/thermal_zone0/temp").to_f() / 1000) + 273.15}K"
 	end
 
-	print("Insert interval (unsigned integer or float): ")
-	i = gets().chop().to_f().abs()
-
-	print("Insert temperature limit (unsigned integer or float): ")
-	l = gets().chop().to_f().abs()
-
-	print("[OPTIONAL] Shell command to execute if the limit (#{l}) is reached: ")
-	cmd = gets().chop()
-
-		while true
-			if Celsius == true
-				t = "#{File.read("/sys/class/thermal/thermal_zone0/temp").to_f() / 1000}C"
-			else 
-				t = "#{(File.read("/sys/class/thermal/thermal_zone0/temp").to_f() / 1000) + 273.15}K"
-			end
-
-			if (t.to_f() >= l)
-				puts("The limit (#{l}) has been reached, executing #{cmd} as Shell command.")
-				if (system(cmd))
-					puts("#{cmd} executed correctly")
-				else	
-					puts("Execution of #{cmd} has failed.\nQuitting.")
-					exit!()
-				end
-			end
-			puts("#{Time.now().to_i()}, #{t}")
-			sleep(i)
-		end
+	if cmd != ""
+          if (t.to_f() >= l)
+            puts("The limit (#{l}) has been reached, executing #{cmd} as Shell command in a new thread.")
+              
+            Thread.new() do
+              if (system(cmd))
+	        puts("#{cmd} executed correctly")
+	      else	
+	        puts("Execution of #{cmd} has failed.\nQuitting.")
+		exit!()
+	      end
+	    end
+        end
+    end
+	puts("#{Time.now().to_i()}, #{t}")
+	sleep(i)
+  end
 rescue Interrupt
-	puts("\nInterrupted by user")
-	exit!()
+  puts("\nInterrupted by user")
+  exit!()
 end
